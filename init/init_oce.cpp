@@ -34,6 +34,66 @@
 #include "log.h"
 #include "util.h"
 
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/mount.h>
+
+#define DEV_BLOCK_SYSTEM "/dev/block/bootdevice/by-name/system"
+
+void set_props_from_file(const char *filename)
+{
+    FILE *fp = fopen(filename, "r");
+
+    if (fp) {
+        char line[1024];
+
+        char propname[PROP_NAME_MAX];
+        char propvalue[PROP_VALUE_MAX];
+        char *pch;
+
+        while ((fgets(line, sizeof(line), fp))) {
+            if (line[0] == '\n' || line[0] == '#') continue;
+
+            pch = strtok(line, "=\n");
+            if (!pch || strlen(pch) >= PROP_NAME_MAX) continue;
+            strcpy(propname, pch);
+
+            pch = strtok(NULL, "=\n");
+            if (!pch || strlen(pch) >= PROP_VALUE_MAX) continue;
+            strcpy(propvalue, pch);
+
+            if (strcmp(propname, "ro.build.fingerprint") == 0 || strcmp(propname, "ro.product.device") == 0) {
+                property_set(propname, propvalue);
+            }
+        }
+        fclose(fp);
+    }
+}
+
+void set_props_from_build(void)
+{
+    if (access("/system/build.prop", R_OK) == 0) {
+        set_props_from_file("/system/build.prop");
+        return;
+    }
+
+    if (mkdir("/tmpsys", 777) != 0)
+        return;
+
+    int is_mounted = mount(DEV_BLOCK_SYSTEM, "/tmpsys", "ext4", MS_RDONLY | MS_NOATIME , "") == 0;
+
+    if (!is_mounted)
+        is_mounted = mount(DEV_BLOCK_SYSTEM, "/tmpsys", "f2fs", MS_RDONLY | MS_NOATIME , "") == 0;
+
+    if (is_mounted) {
+        set_props_from_file("/tmpsys/build.prop");
+        umount("/tmpsys");
+    }
+    rmdir("/tmpsys");
+}
+
 void vendor_load_properties()
 {
     std::string platform;
@@ -49,12 +109,18 @@ void vendor_load_properties()
     if (bootmid == "2PZF10000") {
         /* Europe (OCE_UHL) */
         property_set("ro.build.product", "htc_oceuhl");
-        property_set("ro.product.model", "HTC 2PZF1");
+        property_set("ro.product.model", "HTC U Ultra");
+    } else if (bootmid == "2PZF20000") {
+        /* Dual SIM (OCE_DUGL) */
+        property_set("ro.build.product", "htc_ocedugl");
+        property_set("ro.product.model", "HTC U Ultra Dual Sim");
     } else {
         /* GSM (OCE_UL) */
         property_set("ro.build.product", "htc_oceul");
         property_set("ro.product.model", "HTC U Ultra");
     }
+
+    set_props_from_build();
 
     device = property_get("ro.product.device");
     ERROR("Found bootmid %s setting build properties for %s device\n", bootmid.c_str(), device.c_str());
