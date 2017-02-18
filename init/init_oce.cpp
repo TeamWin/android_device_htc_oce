@@ -111,9 +111,13 @@ void vendor_load_properties()
         property_set("ro.build.product", "htc_oceuhl");
         property_set("ro.product.model", "HTC U Ultra");
     } else if (bootmid == "2PZF20000") {
-        /* Dual SIM (OCE_DUGL) */
+        /* Dual SIM Dual Netcom UHL Europe Africa Asia (OCE_DUGL) */
         property_set("ro.build.product", "htc_ocedugl");
-        property_set("ro.product.model", "HTC U Ultra Dual Sim");
+        property_set("ro.product.model", "HTC_U-1u");
+    } else if (bootmid == "2PZF30000") {
+        /* Dual card full Netcom UHL China (OCE_DUGL) */
+        property_set("ro.build.product", "htc_ocedugl");
+        property_set("ro.product.model", "HTC_U-1w");
     } else {
         /* GSM (OCE_UL) */
         property_set("ro.build.product", "htc_oceul");
