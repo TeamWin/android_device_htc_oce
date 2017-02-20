@@ -20,6 +20,11 @@ include $(CLEAR_VARS)
 LOCAL_MODULE_TAGS := optional
 LOCAL_C_INCLUDES := system/core/init
 LOCAL_CFLAGS := -Wall -DANDROID_TARGET=\"$(TARGET_BOARD_PLATFORM)\"
+
+ifeq ($(shell test $(PLATFORM_SDK_VERSION) -gt 23; echo $$?),0)
+    LOCAL_CFLAGS += -DGETPROP_RETURNS_STRING
+endif
+
 LOCAL_SRC_FILES := init_oce.cpp
 LOCAL_MODULE := libinit_oce
 

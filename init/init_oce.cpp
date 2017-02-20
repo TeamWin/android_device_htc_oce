@@ -44,6 +44,7 @@
 
 void set_props_from_file(const char *filename)
 {
+    int IsSet_ro_product_device = 0;
     FILE *fp = fopen(filename, "r");
 
     if (fp) {
@@ -64,11 +65,27 @@ void set_props_from_file(const char *filename)
             if (!pch || strlen(pch) >= PROP_VALUE_MAX) continue;
             strcpy(propvalue, pch);
 
-            if (strcmp(propname, "ro.build.fingerprint") == 0 || strcmp(propname, "ro.product.device") == 0) {
+            if (strcmp(propname, "ro.build.fingerprint") == 0) {
                 property_set(propname, propvalue);
+            }
+            else if (strcmp(propname, "ro.product.device") == 0) {
+                property_set(propname, propvalue);
+                IsSet_ro_product_device = 1;
             }
         }
         fclose(fp);
+    }
+
+    if (!IsSet_ro_product_device) {
+#ifdef GETPROP_RETURNS_STRING
+        std::string propvalue;
+        propvalue = property_get("ro.build.product");
+        property_set("ro.product.device", propvalue.c_str());
+#else
+        char propvalue[PROP_VALUE_MAX];
+        property_get("ro.build.product", propvalue);
+        property_set("ro.product.device", propvalue);
+#endif
     }
 }
 
