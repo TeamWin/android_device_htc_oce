@@ -1,16 +1,23 @@
-on init
-    echo 0 > /sys/devices/soc/7577000.i2c/i2c-3/3-0011/ti-lmu-backlight.2/backlight/lcd/brightness
-    echo 0 > /sys/devices/soc/7577000.i2c/i2c-3/3-0011/ti-lmu-backlight.2/backlight/lcd/max_brightness
-    echo 0 > /sys/devices/soc/7577000.i2c/i2c-3/3-002c/backlight/lcd-backlight/brightness
-    echo 0 > /sys/devices/soc/7577000.i2c/i2c-3/3-002c/backlight/lcd-backlight/max_brightness
-	
-    # Load Tuxera exfat module
-    insmod /system/lib/modules/texfat.ko
+import init.recovery.qcom.rc
+
+on offmode_charging
+    start detect_key
+    start offmode_charging
 
 on boot
+    export LD_PRELOAD /sbin/liblog_htc_sbin.so
+
     start chargeled
 
 service chargeled /sbin/chargeled
     disabled
     seclabel u:r:healthd:s0
 
+service detect_key /sbin/detect_key
+    disabled
+    seclabel u:r:healthd:s0
+    oneshot
+
+service offmode_charging /sbin/offmode_charging
+    disabled
+    seclabel u:r:healthd:s0
