@@ -59,7 +59,7 @@ TW_NO_EXFAT_FUSE := true
 TARGET_RECOVERY_QCOM_RTC_FIX := true
 TARGET_RECOVERY_DEVICE_MODULES := chargeled liblog_htc_sbin tzdata hwservicemanager servicemanager android.hidl.base@1.0
 TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/usr/share/zoneinfo/tzdata $(TARGET_OUT)/bin/hwservicemanager $(TARGET_OUT)/bin/servicemanager $(TARGET_OUT)/lib64/android.hidl.base@1.0.so
-TW_USE_TOOLBOX := true
+#TW_USE_TOOLBOX := true
 
 # TWRP Debug Flags
 #TARGET_USES_LOGD := true
